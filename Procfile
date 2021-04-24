@@ -1,1 +1,1 @@
-web: gunicorn {name of your project folder}.wsgi
+web: gunicorn carcollector-project.wsgi
