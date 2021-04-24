@@ -1,0 +1,20 @@
+{% load static %}
+
+<header>{% include 'header.html' %}</header>
+<body>
+  {% for car in cars %}
+  <div class="card-panel hoverable grey lighten-3">
+    <a href="{% url 'detail' car.id %}">
+      <div class="card-content green-text text-darken-4">
+        <span class="card-title">{{ car.nickname }}</span>
+        <p>Make: {{ car.make }}</p>
+        <p>Model: {{ car.model }}</p>
+        <p>Color: {{ car.color }}</p>
+      </div>
+    </a>
+  </div>
+
+  {%empty%}
+  <div>No cars</div>
+  {% endfor %}
+</body>

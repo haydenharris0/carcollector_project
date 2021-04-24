@@ -1,0 +1,15 @@
+{% load static %}
+
+<header>{% include 'header.html' %}</header>
+<body>
+  <h1 class="center-align">Delete Confirmation</h1>
+  <h4 class="center-align">
+    Are you sure you want to delete the
+    <span class="green-text text-darken-4">{{ object.nickname }}</span>?
+  </h4>
+  <form class="center-align" action="" method="POST">
+    {% csrf_token %}
+    <input class="btn green darken-4" type="submit" value="Yes - Delete!" />
+    <a class="btn green darken-4" href="{% url 'detail' car.id %}">Cancel</a>
+  </form>
+</body>

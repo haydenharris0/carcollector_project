@@ -1,0 +1,26 @@
+{% load static %}
+
+<header>{% include 'header.html' %}</header>
+<body>
+  {% if object %}
+  <h1 class="center-align">
+    Edit <span class="green-text text-darken-4">{{object.nickname}}</span>
+  </h1>
+  {% else %}
+  <h1 class="center-align">Add Car</h1>
+  {% endif %}
+  <!-- Leaving the action empty makes the form post to the same url used to display it -->
+  <form class="container" action="" method="post">
+    <!-- Django requires the following for security purposes -->
+    {% csrf_token %}
+    <table>
+      <!-- Render the inputs inside of <tr>s & <td>s -->
+      {{ form.as_table }}
+    </table>
+    <div class="center-align">
+      <input type="submit" value="Submit!" class="btn green darken-4" />
+      <a class="btn green darken-4" href="{% url 'index' %}">Cancel</a>
+    </div>
+    </div>
+  </form>
+</body>
