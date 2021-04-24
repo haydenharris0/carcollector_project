@@ -1,1 +1,1 @@
-web: gunicorn carcollector-project.wsgi
+web: gunicorn carcollector_project.wsgi
