@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.base import Model
 from django.urls import reverse
@@ -28,6 +29,7 @@ class Car(models.Model):
     color = models.CharField(max_length=20, default="NA")
     description = models.CharField(max_length=50, default="NA")
     accessories = models.ManyToManyField(Accessory)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name

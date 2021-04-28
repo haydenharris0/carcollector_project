@@ -1,6 +1,10 @@
 from main_app.forms import WashingForm
 from django.db import models
 from django.shortcuts import redirect, render
+from django.contrib.auth import login
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 # models
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
@@ -21,12 +25,14 @@ def about(request):
     return render(request, 'about.html')
 
 
+@login_required
 def cars_index(request):
-    cars = Car.objects.all()
+    cars = Car.objects.filter(user=request.user)
     context = {'cars': cars}
     return render(request, 'cars/index.html', context)
 
 
+@login_required
 def cars_detail(request, car_id):
     car = Car.objects.get(id=car_id)
     accessories_car_doesnt_have = Accessory.objects.exclude(
@@ -40,6 +46,7 @@ def cars_detail(request, car_id):
     return render(request, 'cars/detail.html', context)
 
 
+@login_required
 def add_washing(request, car_id):
     form = WashingForm(request.POST)
 
@@ -50,21 +57,26 @@ def add_washing(request, car_id):
     return redirect('detail', car_id=car_id)
 
 
-class CarCreate(CreateView):
+class CarCreate(LoginRequiredMixin, CreateView):
+    model = Car
+    fields = ['nickname', 'make', 'model', 'year', 'color', 'description']
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+
+class CarUpdate(LoginRequiredMixin, UpdateView):
     model = Car
     fields = ['nickname', 'make', 'model', 'year', 'color', 'description']
 
 
-class CarUpdate(UpdateView):
-    model = Car
-    fields = ['nickname', 'make', 'model', 'year', 'color', 'description']
-
-
-class CarDelete(DeleteView):
+class CarDelete(LoginRequiredMixin, DeleteView):
     model = Car
     success_url = '/cars/'
 
 
+@login_required
 def accessories_index(request):
     accessories = Accessory.objects.all()
     context = {'accessories': accessories}
@@ -72,40 +84,44 @@ def accessories_index(request):
     return render(request, 'accessory/index.html', context)
 
 
+@login_required
 def accessory_detail(request, accessory_id):
     accessory = Accessory.objects.get(id=accessory_id)
     context = {'accessory': accessory}
     return render(request, 'accessory/detail.html', context)
 
 
-class Create_Accessory(CreateView):
+class Create_Accessory(LoginRequiredMixin, CreateView):
     model = Accessory
     fields = ['name']
     success_url = '/accessories/'
 
 
-class Update_Accessory(UpdateView):
+class Update_Accessory(LoginRequiredMixin, UpdateView):
     model = Accessory
     fields = '__all__'
     success_url = '/accessories/'
 
 
-class Delete_Accessory(DeleteView):
+class Delete_Accessory(LoginRequiredMixin, DeleteView):
     model = Accessory
     success_url = '/accessories/'
 
 
+@login_required
 def assoc_accessory(request, car_id, accessory_id):
     # Note that you can pass a toy's id instead of the whole object
     Car.objects.get(id=car_id).accessories.add(accessory_id)
     return redirect('detail', car_id=car_id)
 
 
+@login_required
 def remove_accessory(request, car_id, accessory_id):
     Car.objects.get(id=car_id).accessories.remove(accessory_id)
     return redirect('detail', car_id=car_id)
 
 
+@login_required
 def add_photo(request, car_id):
     # photo-file will be the "name" attribute on the <input type="file">
     photo_file = request.FILES.get('photo-file', None)
@@ -125,3 +141,23 @@ def add_photo(request, car_id):
         except:
             print('An error occurred uploading file to S3')
     return redirect('detail', car_id=car_id)
+
+
+def signup(request):
+    error_message = ''
+    if request.method == 'POST':
+        # This is how to create a 'user' form object
+        # that includes the data from the browser
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            # This will add the user to the database
+            user = form.save()
+            # This is how we log a user in via code
+            login(request, user)
+            return redirect('index')
+        else:
+            error_message = 'Invalid sign up - try again'
+    # A bad POST or a GET request, so render signup.html with an empty form
+    form = UserCreationForm()
+    context = {'form': form, 'error_message': error_message}
+    return render(request, 'registration/signup.html', context)
